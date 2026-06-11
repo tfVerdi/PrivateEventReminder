@@ -47,16 +47,24 @@ class Database:
                     );""")
                 connection.commit()
     
-    def add_event(self, title, description, day, month, year, time = None, double_check_day = True):
-        # TODO: make sure we're complying with the time format MySQL needs, if not, transform from time.time() to that format
+    def add_event(self, event: Event, double_check_day: bool = True):
+        calendar_date = event.calendar_date.calendar_date
         with mysql.connector.connect(user=self.MYSQL_NAME, password=self.MYSQL_PASS, host=self.HOST, database=self.DATABASE) as connection:
             with connection.cursor() as cursor:
                 cursor.execute(f"USE {self.DATABASE};")
                 if double_check_day:
-                    cursor.execute(f"SELECT * FROM calendar_date WHERE CalendarDate = '{year}-{month}-{day}';")
-                    # TODO: finish this. add_event checks if calendar_date has already been initialized in calendar_date table.
-                    # if it has been, continue as normal, if not, initialize it and then continue as normal.
-                cursor.execute(f"""INSERT INTO events (CalendarDate, WeekdayName, IsHoliday, Note) VALUES (\
-                    );""")
+                    cursor.execute(f"SELECT * FROM calendar_date WHERE CalendarDate = '{calendar_date.year}-{calendar_date.month}-{calendar_date.day}';")
+                    result = [i for i in cursor] # type: ignore
+                    if len(result) == 0:
+                        self.add_calendar_date(CalendarDate(day=calendar_date.day, month=calendar_date.month, year=calendar_date.year))
+                if event.time == None:
+                    cursor.execute(f"""INSERT INTO events (CalendarDate, Title, Description) VALUES (\
+                        '{calendar_date.year}-{calendar_date.month}-{calendar_date.day}', '{event.title}', '{event.description}'
+                        );""")
+                else:
+                    cursor.execute(f"""INSERT INTO events (CalendarDate, Title, Description, EventTime) VALUES (\
+                        '{calendar_date.year}-{calendar_date.month}-{calendar_date.day}', '{event.title}', '{event.description}',\
+                        '{event.time.hour}:{event.time.hour}:{event.time.second}'\
+                        );""")
                 connection.commit()
 
