@@ -1,5 +1,6 @@
 from zoneinfo import ZoneInfo
 import datetime
+import settings
 from typing import Optional
 
 class CalendarDate:
@@ -8,7 +9,7 @@ class CalendarDate:
             year,
             month,
             day,
-            tzinfo=ZoneInfo("Chile/Continental")
+            tzinfo=ZoneInfo(settings.TZ_NAME)
         )
         self.weekday_name = self.calendar_date.strftime("%A")
         self.is_holiday = is_holiday
@@ -21,8 +22,8 @@ class CalendarDate:
 
 class Event:
     def __init__(self, calendar_date: CalendarDate, title: str, description: Optional[str] = None, time: Optional[datetime.time] = None):
-        self.id: int
-        self.calendar_date: CalendarDate
-        self.title: str
-        self.description: str
-        self.time: datetime.time
+        self.id: int 
+        self.calendar_date: CalendarDate = calendar_date
+        self.title: str = title
+        self.description: Optional[str] = description
+        self.time: Optional[datetime.time] = time 
